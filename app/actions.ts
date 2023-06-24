@@ -63,11 +63,11 @@ export async function changeNameLocation(data: FormData) {
 }
 export async function updateBio(data: FormData) {
   const bio = data.get("bio")?.toString();
-  const userId = data.get("userId")?.toString();
-  if (!bio || !userId) return;
+  const loggedInUserId = data.get("loggedInUserId")?.toString();
+  if (!bio || !loggedInUserId) return;
 
   const updatedUser = await prisma.user.update({
-    where: { id: userId },
+    where: { id: loggedInUserId },
     data: { bio },
   });
   return updatedUser;

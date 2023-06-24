@@ -21,6 +21,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { useQueryClient } from "@tanstack/react-query";
 import { MyPost } from "@/types";
+import { BounceLoader } from "react-spinners";
 
 interface PostCardProps {
   post: MyPost;
@@ -33,6 +34,7 @@ export default function PostCard({ post, session }: PostCardProps) {
     includeSeconds: true,
   });
   const [toggleComments, setToggleComments] = useState(false);
+  const [loading, setLoading] = useState({ bookmark: false });
   const commentInputRef = useRef<HTMLInputElement>(null);
   const numberOfPhotos = post.photos.length;
   const [likes, setLikes] = useState({
@@ -113,6 +115,7 @@ export default function PostCard({ post, session }: PostCardProps) {
 
   const handleSavedPost = async () => {
     if (!session?.user) return;
+    setLoading((prev) => ({ ...prev, bookmark: true }));
     const formData = new FormData();
     formData.set("postId", post.id.toString());
     formData.set("userId", session.user.id.toString());
@@ -126,6 +129,7 @@ export default function PostCard({ post, session }: PostCardProps) {
     }
     // queryClient.invalidateQueries({ queryKey: ["posts"] });
     queryClient.refetchQueries({ queryKey: ["posts"] });
+    setLoading((prev) => ({ ...prev, bookmark: false }));
   };
   return (
     <Card>
@@ -147,11 +151,15 @@ export default function PostCard({ post, session }: PostCardProps) {
         </div>
         <div className="ml-auto relative">
           <button className="text-gray-400" onClick={handleSavedPost}>
-            <BookmarkIcon
-              className={`w-6 h-6 ${
-                isSavedByMe && "fill-socialBlue stroke-socialBlue"
-              } `}
-            />
+            {loading.bookmark ? (
+              <BounceLoader color="#218dfa" speedMultiplier={1} size={20} />
+            ) : (
+              <BookmarkIcon
+                className={`w-6 h-6 ${
+                  isSavedByMe && "fill-socialBlue stroke-socialBlue"
+                } `}
+              />
+            )}
           </button>
         </div>
       </div>

@@ -48,18 +48,21 @@ export default function PostFormCard({}: PostFormCardProps) {
   const dropZoneRef = useRef<HTMLInputElement>(null);
   const [files, setFiles] = useState<NewFile[] | null>(null);
 
-  const handleSubmit = async (data: FormData) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     const userId = session?.user?.id;
     if (!userId) return console.log("userId not found");
-    data.set("userId", userId);
     setLoading(true);
+    const formData = new FormData();
+    formData.set("userId", userId);
+    formData.set("content", inputRef.current?.value!);
     if (files) {
-      data.delete("photos");
+      formData.delete("photos");
       files.forEach((file) => {
-        data.append("photos", file);
+        formData.append("photos", file);
       });
     }
-    await postContent(data);
+    await postContent(formData);
     // queryClient.invalidateQueries({ queryKey: ["posts"] });
     queryClient.refetchQueries({ queryKey: ["posts"] });
 
@@ -71,7 +74,7 @@ export default function PostFormCard({}: PostFormCardProps) {
   return (
     <>
       <Card>
-        <form action={handleSubmit} ref={formRef}>
+        <form ref={formRef} onSubmit={handleSubmit}>
           <div className="flex gap-2 relative">
             {loading && <Preloader />}
             {session ? (
@@ -143,7 +146,6 @@ export default function PostFormCard({}: PostFormCardProps) {
             <div className="ml-auto">
               <button
                 disabled={loading}
-                // className={"bg-socialBlue text-white px-6 py-1 rounded-md "}
                 className={cn(
                   "bg-socialBlue text-white px-6 py-1 rounded-md",
                   loading && "opacity-50"

@@ -2,9 +2,10 @@
 import { useContext, useState } from "react";
 import Card from "./Card";
 import { AppCtx } from "@/context";
-import { useRouter } from "next/navigation";
 import { updateBio } from "@/app/actions";
 import { PencilSquareIcon } from "@heroicons/react/24/outline";
+import { useSession } from "next-auth/react";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface ProfileAboutTabProps {
   isEditable: boolean;
@@ -15,7 +16,8 @@ export default function ProfileAboutTab({
   isEditable,
   userBio,
 }: ProfileAboutTabProps) {
-  const { refresh } = useRouter();
+  const queryClient = useQueryClient();
+  const { data: session } = useSession();
 
   const { appState, setAppState } = useContext(AppCtx);
   const [userProfileBio, setUserProfileBio] = useState(userBio);
@@ -27,9 +29,14 @@ export default function ProfileAboutTab({
     }));
 
     const formData = new FormData();
+    if (!session?.user?.id) return console.log("userId required");
     formData.set("bio", userProfileBio);
+    formData.set("loggedInUserId", session?.user?.id);
     await updateBio(formData);
-    refresh();
+    queryClient.refetchQueries({
+      queryKey: ["posts", "userDetails", session.user.id],
+    });
+    // refresh();
     setAppState((appState) => ({
       ...appState,
       loading: { ...appState.loading, bio: false },

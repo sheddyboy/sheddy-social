@@ -60,7 +60,8 @@ export default function PostFormCard({}: PostFormCardProps) {
       });
     }
     await postContent(data);
-    queryClient.invalidateQueries({ queryKey: ["posts"] });
+    // queryClient.invalidateQueries({ queryKey: ["posts"] });
+    queryClient.refetchQueries({ queryKey: ["posts"] });
 
     formRef.current?.reset();
     setFiles(null);

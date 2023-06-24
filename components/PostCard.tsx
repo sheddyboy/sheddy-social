@@ -83,7 +83,8 @@ export default function PostCard({ post, session }: PostCardProps) {
         likeCount: likes.likeCount + 1,
       }));
     }
-    queryClient.invalidateQueries({ queryKey: ["posts"] });
+    // queryClient.invalidateQueries({ queryKey: ["posts"] });
+    queryClient.refetchQueries({ queryKey: ["posts"] });
   };
 
   const handleComments = async () => {
@@ -106,7 +107,8 @@ export default function PostCard({ post, session }: PostCardProps) {
         _comments: prev._comments + 1,
       }));
     }
-    queryClient.invalidateQueries({ queryKey: ["posts"] });
+    // queryClient.invalidateQueries({ queryKey: ["posts"] });
+    queryClient.refetchQueries({ queryKey: ["posts"] });
   };
 
   const handleSavedPost = async () => {
@@ -122,7 +124,8 @@ export default function PostCard({ post, session }: PostCardProps) {
       await savePost(formData);
       setIsSavedByMe(true);
     }
-    queryClient.invalidateQueries({ queryKey: ["posts"] });
+    // queryClient.invalidateQueries({ queryKey: ["posts"] });
+    queryClient.refetchQueries({ queryKey: ["posts"] });
   };
   return (
     <Card>

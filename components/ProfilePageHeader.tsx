@@ -86,7 +86,8 @@ export default function ProfilePageHeader({ userId }: ProfilePageHeaderProps) {
     formData.set("file", file);
     formData.set("loggedInUserId", loggedInUserId);
     await changeCoverImage(formData);
-    queryClient.invalidateQueries({ queryKey: ["userFollows"] });
+    // queryClient.invalidateQueries({ queryKey: ["userFollows",userId] });
+    queryClient.refetchQueries({ queryKey: ["userFollows", userId] });
     setAppState((appState) => ({
       ...appState,
       loading: { ...appState.loading, coverImage: false },
@@ -112,8 +113,10 @@ export default function ProfilePageHeader({ userId }: ProfilePageHeaderProps) {
     if (updatedUser) {
       await update({ image: updatedUser.image });
     }
-    queryClient.invalidateQueries({ queryKey: ["posts"] });
-    queryClient.invalidateQueries({ queryKey: ["userFollows"] });
+    // queryClient.invalidateQueries({ queryKey: ["posts"] });
+    // queryClient.invalidateQueries({ queryKey: ["userFollows",userId] });
+    queryClient.refetchQueries({ queryKey: ["posts"] });
+    queryClient.refetchQueries({ queryKey: ["userFollows", userId] });
     setAppState((appState) => ({
       ...appState,
       loading: { ...appState.loading, profileImage: false },
@@ -134,9 +137,12 @@ export default function ProfilePageHeader({ userId }: ProfilePageHeaderProps) {
     formData.set("location", editInputs.location);
     const updatedUser = await changeNameLocation(formData);
     if (updatedUser) {
-      const newSession = await update({ name: updatedUser.name });
+      await update({ name: updatedUser.name });
     }
-    queryClient.invalidateQueries();
+    // queryClient.invalidateQueries();
+    queryClient.refetchQueries({ queryKey: ["posts"] });
+    queryClient.refetchQueries({ queryKey: ["userFollows", userId] });
+
     setAppState((appState) => ({
       ...appState,
       loading: { ...appState.loading, nameLocation: false },
@@ -163,6 +169,8 @@ export default function ProfilePageHeader({ userId }: ProfilePageHeaderProps) {
     } else {
       await followUser(formData);
     }
+    queryClient.refetchQueries({ queryKey: ["userFollows", userId] });
+
     // refresh();
 
     setAppState((appState) => ({

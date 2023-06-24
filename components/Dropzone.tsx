@@ -22,16 +22,12 @@ export default function Dropzone({
 
   const onDrop = useCallback(
     (acceptedFiles: File[], rejectedFiles: FileRejection[]) => {
-      console.log("acceptedFiles", acceptedFiles);
-      console.log("rejectedFiles", rejectedFiles);
       acceptedFiles.map((file) => {
         return Object.assign(file, { preview: URL.createObjectURL(file) });
       });
       setFiles((files) => {
         if (files) {
           const availableSpace = 4 - files.length;
-          console.log("availableSpace", availableSpace);
-          console.log("acceptedFiles", acceptedFiles.length);
           if (availableSpace === 0 || acceptedFiles.length > availableSpace)
             return files;
 

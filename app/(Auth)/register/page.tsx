@@ -29,14 +29,10 @@ export default function RegisterPage() {
           email: data.email,
           password: registerFormData.get("password")?.toString(),
         }).then((data) => {
-          console.log("data", data);
           router.push(searchParams.get("callbackUrl") || "/");
         });
-        console.log(data);
       })
-      .catch((err) => {
-        console.log(err);
-      });
+      .catch((err) => {});
   };
   return (
     <div className="flex mt-4 max-w-4xl mx-auto gap-6">

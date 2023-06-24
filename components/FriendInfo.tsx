@@ -1,13 +1,17 @@
 import Avatar from "./Avatar";
 
-interface FriendInfoProps {}
+interface FriendInfoProps {
+  name: string | null;
+  image: string | null;
+  userId: string;
+}
 
-export default function FriendInfo({}: FriendInfoProps) {
+export default function FriendInfo({ image, name, userId }: FriendInfoProps) {
   return (
     <div className="flex gap-2">
-      <Avatar />
+      <Avatar image={image} userId={userId} />
       <div className="">
-        <h1 className="font-bold text-xl">Jane Doe</h1>
+        <h1 className="font-bold text-xl">{name}</h1>
         <div className="text-sm leading-3">5 Mutual friends</div>
       </div>
     </div>

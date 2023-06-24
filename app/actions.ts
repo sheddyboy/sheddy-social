@@ -2,7 +2,7 @@
 import prisma from "@/prisma";
 import { cookies } from "next/dist/client/components/headers";
 import { decode } from "next-auth/jwt";
-import { revalidatePath } from "next/cache";
+// import { revalidatePath } from "next/cache";
 import {
   getUserFromCookies,
   uploadPhotosToCloudinary,
@@ -28,7 +28,7 @@ export async function postContent(data: FormData) {
   const post = await prisma.post.create({
     data: { content, userId: user.uid, photos: photosArray },
   });
-  revalidatePath("/");
+  // revalidatePath("/");
   return post;
 }
 
@@ -42,7 +42,7 @@ export async function changeCoverImage(data: FormData) {
     where: { id: user.uid },
     data: { coverImage: url },
   });
-  revalidatePath(`/profile/${user.uid}`);
+  // revalidatePath(`/profile/${user.uid}`);
   return updatedUser;
 }
 export async function changeProfileImage(data: FormData) {
@@ -55,7 +55,7 @@ export async function changeProfileImage(data: FormData) {
     where: { id: user.uid },
     data: { image: url },
   });
-  revalidatePath(`/profile/${user.uid}`);
+  // revalidatePath(`/profile/${user.uid}`);
   return updatedUser;
 }
 
@@ -87,17 +87,28 @@ export async function likePost(data: FormData) {
   const postId = data.get("postId")?.toString();
   const userId = data.get("userId")?.toString();
   if (!postId || !userId) return;
-  const likes = await prisma.likes.create({
-    data: { postId: Number(postId), userId },
+  // const likes = await prisma.likes.create({
+  //   data: { postId: Number(postId), userId },
+  // });
+  // return likes;
+  const updatedPost = await prisma.post.update({
+    where: { id: Number(postId) },
+    data: { likes: { connect: { id: userId } } },
   });
-  return likes;
+
+  return updatedPost;
 }
 export async function disLikePost(data: FormData) {
-  const likesId = data.get("likesId")?.toString();
-  if (!likesId) return;
-  const likes = await prisma.likes.delete({ where: { id: Number(likesId) } });
+  const postId = data.get("postId")?.toString();
+  const userId = data.get("userId")?.toString();
+  if (!postId || !userId) return;
 
-  return likes;
+  const updatedPost = await prisma.post.update({
+    where: { id: Number(postId) },
+    data: { likes: { disconnect: { id: userId } } },
+  });
+
+  return updatedPost;
 }
 
 export async function addComment(data: FormData) {
@@ -115,19 +126,50 @@ export async function savePost(data: FormData) {
   const postId = data.get("postId")?.toString();
   const userId = data.get("userId")?.toString();
   if (!postId || !userId) return;
-  const savedPost = await prisma.savedPosts.create({
-    data: { postId: Number(postId), userId: userId },
+  const updatedPost = await prisma.post.update({
+    where: { id: Number(postId) },
+    data: { savedBy: { connect: { id: userId } } },
   });
 
-  return savedPost;
+  return updatedPost;
 }
 export async function removeSavePost(data: FormData) {
-  const savedPostId = data.get("savedPostId")?.toString();
-  if (!savedPostId) return;
+  const postId = data.get("postId")?.toString();
+  const userId = data.get("userId")?.toString();
+  if (!postId || !userId) return;
 
-  const savedPost = await prisma.savedPosts.delete({
-    where: { id: Number(savedPostId) },
+  const updatedPost = await prisma.post.update({
+    where: { id: Number(postId) },
+    data: { savedBy: { disconnect: { id: userId } } },
   });
 
-  return savedPost;
+  return updatedPost;
+}
+
+export async function followUser(data: FormData) {
+  const followingUser = data.get("followingOrUnFollowingUser")?.toString();
+  const userToBeFollowed = data.get("userToBeFollowedOrUnFollowed")?.toString();
+  if (!followingUser || !userToBeFollowed) return;
+  // const follow = await prisma.follows.create({
+  //   data: { followerId: followingUser, followingId: userToBeFollowed },
+  // });
+
+  // return follow;
+  const updatedUser = await prisma.user.update({
+    where: { id: userToBeFollowed },
+    data: { followers: { connect: { id: followingUser } } },
+  });
+
+  return updatedUser;
+}
+export async function unFollowUser(data: FormData) {
+  const followingUser = data.get("followingOrUnFollowingUser")?.toString();
+  const userToBeFollowed = data.get("userToBeFollowedOrUnFollowed")?.toString();
+  if (!followingUser || !userToBeFollowed) return;
+  const updatedUser = await prisma.user.update({
+    where: { id: userToBeFollowed },
+    data: { followers: { disconnect: { id: followingUser } } },
+  });
+
+  return updatedUser;
 }

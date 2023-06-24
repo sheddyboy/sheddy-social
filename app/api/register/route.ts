@@ -8,13 +8,10 @@ export async function POST(req: NextRequest) {
   const name = formData.get("name")?.toString()!;
   const email = formData.get("email")?.toString()!;
   const password = formData.get("password")?.toString()!;
-  console.log(name, email, password);
 
   const salt = await bcrypt.genSalt();
   const hashedPassword = await bcrypt.hash(password, salt);
-  console.log(hashedPassword);
   let imageUrl = "";
-  console.log(formData);
   if (formData.get("file")) {
     formData.set("upload_preset", "eka0ifzm");
     const res = await fetch(process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_URL!, {
@@ -23,7 +20,6 @@ export async function POST(req: NextRequest) {
     });
     const data = await res.json();
     imageUrl = data.secure_url;
-    console.log(imageUrl);
   }
 
   try {

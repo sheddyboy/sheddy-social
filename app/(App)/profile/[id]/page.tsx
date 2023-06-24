@@ -1,34 +1,27 @@
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import ProfilePage from "@/components/ProfilePage";
+import { getAuthSession } from "@/app/api/auth/[...nextauth]/route";
+import ProfilePageContent from "@/components/ProfilePageContent";
+import ProfilePageHeader from "@/components/ProfilePageHeader";
 import prisma from "@/prisma";
-import { getServerSession } from "next-auth";
+import { notFound } from "next/navigation";
 
 interface ProfileProps {
   params: { id: string };
 }
 
 export default async function Profile({ params }: ProfileProps) {
-  const session = await getServerSession(authOptions);
-  console.log("first", session);
-
+  // const session = await getAuthSession();
   const user = await prisma.user.findUnique({
     where: { id: params.id },
-    include: {
-      post: {
-        include: {
-          likes: { select: { userId: true, id: true } },
-          savedPosts: { select: { userId: true, id: true } },
-          comments: {
-            include: { user: { select: { name: true, image: true } } },
-          },
-        },
-      },
-    },
+    select: { id: true },
   });
+
+  // if (!session) return;
+  if (!user) return notFound();
 
   return (
     <>
-      <ProfilePage user={user} session={session} />
+      <ProfilePageHeader userId={params.id} />
+      <ProfilePageContent userId={params.id} />
     </>
   );
 }

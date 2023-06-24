@@ -38,21 +38,27 @@ model Session {
 }
 
 model User {
-  id            String       @id @default(cuid())
-  name          String?
-  email         String?      @unique
-  password      String?
-  emailVerified DateTime?
-  image         String?
-  place         String?
-  coverImage    String?
-  bio           String?
-  accounts      Account[]
-  sessions      Session[]
-  post          Post[]
-  likes         Likes[]
-  comments      Comments[]
-  savedPosts    SavedPosts[]
+  id                      String     @id @default(cuid())
+  name                    String?
+  email                   String?    @unique
+  password                String?
+  emailVerified           DateTime?
+  image                   String?
+  place                   String?
+  coverImage              String?
+  bio                     String?
+  accounts                Account[]
+  sessions                Session[]
+  myPosts                 Post[]     @relation("UserPosts")
+  savedPosts              Post[]     @relation("UserSavedPosts")
+  likedPosts              Post[]     @relation("UserLikedPosts")
+  commentedPosts          Comments[]
+  followers               User[]     @relation("UserFollows")
+  following               User[]     @relation("UserFollows")
+  postNotificationOnUsers User[]     @relation("PostNotification")
+  postNotificationOnMe    User[]     @relation("PostNotification")
+  createdAt               DateTime   @default(now())
+  updatedAt               DateTime   @updatedAt
 }
 
 model VerificationToken {
@@ -64,25 +70,25 @@ model VerificationToken {
 }
 
 model Post {
-  id         Int          @id @default(autoincrement())
-  content    String
-  photos     String[]
-  userId     String
-  user       User         @relation(fields: [userId], references: [id])
-  createdAt  DateTime     @default(now())
-  updatedAt  DateTime     @updatedAt
-  likes      Likes[]
-  comments   Comments[]
-  savedPosts SavedPosts[]
+  id        Int        @id @default(autoincrement())
+  content   String
+  photos    String[]
+  userId    String
+  author    User       @relation("UserPosts", fields: [userId], references: [id])
+  likes     User[]     @relation("UserLikedPosts")
+  comments  Comments[]
+  savedBy   User[]     @relation("UserSavedPosts")
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 }
 
-model Likes {
-  id     Int    @id @default(autoincrement())
-  postId Int
-  userId String
-  user   User   @relation(fields: [userId], references: [id])
-  post   Post   @relation(fields: [postId], references: [id])
-}
+// model Likes {
+//   id     Int    @id @default(autoincrement())
+//   postId Int
+//   userId String
+//   user   User   @relation(fields: [userId], references: [id])
+//   post   Post   @relation(fields: [postId], references: [id])
+// }
 
 model Comments {
   id        Int      @id @default(autoincrement())
@@ -95,12 +101,21 @@ model Comments {
   updatedAt DateTime @updatedAt
 }
 
-model SavedPosts {
-  id        Int      @id @default(autoincrement())
-  postId    Int
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
-  post      Post     @relation(fields: [postId], references: [id])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
+// model SavedPosts {
+//   id        Int      @id @default(autoincrement())
+//   postId    Int
+//   userId    String
+//   user      User     @relation(fields: [userId], references: [id])
+//   post      Post     @relation(fields: [postId], references: [id])
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
+// }
+
+// model Follows {
+//   follower    User   @relation("follower", fields: [followerId], references: [id])
+//   followerId  String
+//   following   User   @relation("following", fields: [followingId], references: [id])
+//   followingId String
+
+//   @@id([followerId, followingId])
+// }

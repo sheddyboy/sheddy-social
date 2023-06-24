@@ -1,5 +1,9 @@
 import NavigationCard from "@/components/NavigationCard";
 
+export const metadata = {
+  title: "Sheddy Chat",
+};
+
 interface AppLayoutProps {
   children: React.ReactNode;
 }

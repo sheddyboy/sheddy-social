@@ -1,5 +1,5 @@
 import prisma from "@/prisma";
-import NextAuth, { AuthOptions } from "next-auth";
+import NextAuth, { AuthOptions, getServerSession } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import bcrypt from "bcrypt";
@@ -52,8 +52,6 @@ export const authOptions: AuthOptions = {
         token.email = session.email ?? token.email;
         token.picture = session.image ?? token.picture;
 
-        console.log("token", token);
-        console.log("session", session);
         revalidatePath("/");
       }
       if (user) {
@@ -68,3 +66,5 @@ export const authOptions: AuthOptions = {
 const handler = NextAuth(authOptions);
 
 export { handler as GET, handler as POST };
+
+export const getAuthSession = () => getServerSession(authOptions);

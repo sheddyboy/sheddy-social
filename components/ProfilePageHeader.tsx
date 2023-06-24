@@ -72,6 +72,8 @@ export default function ProfilePageHeader({ userId }: ProfilePageHeaderProps) {
   );
 
   const handleCoverImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const loggedInUserId = session?.user?.id;
+    if (!loggedInUserId) return console.log("userId not found");
     if (e.target.files && e.target.files[0].size > 3 * 1024 * 1024)
       return alert("Image is larger than 3mb");
     setAppState((appState) => ({
@@ -82,8 +84,9 @@ export default function ProfilePageHeader({ userId }: ProfilePageHeaderProps) {
     const file = e.target.files[0];
     const formData = new FormData();
     formData.set("file", file);
+    formData.set("loggedInUserId", loggedInUserId);
     await changeCoverImage(formData);
-    queryClient.invalidateQueries({ queryKey: ["posts"] });
+    queryClient.invalidateQueries({ queryKey: ["userFollows"] });
     setAppState((appState) => ({
       ...appState,
       loading: { ...appState.loading, coverImage: false },
@@ -91,6 +94,8 @@ export default function ProfilePageHeader({ userId }: ProfilePageHeaderProps) {
   };
 
   const handleProfileImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const loggedInUserId = session?.user?.id;
+    if (!loggedInUserId) return console.log("loggedInUserId not found");
     if (e.target.files && e.target.files[0].size > 3 * 1024 * 1024)
       return alert("Image is larger than 3mb");
     setAppState((appState) => ({
@@ -102,11 +107,13 @@ export default function ProfilePageHeader({ userId }: ProfilePageHeaderProps) {
     const file = e.target.files[0];
     const formData = new FormData();
     formData.set("file", file);
+    formData.set("loggedInUserId", loggedInUserId);
     const updatedUser = await changeProfileImage(formData);
     if (updatedUser) {
       await update({ image: updatedUser.image });
     }
     queryClient.invalidateQueries({ queryKey: ["posts"] });
+    queryClient.invalidateQueries({ queryKey: ["userFollows"] });
     setAppState((appState) => ({
       ...appState,
       loading: { ...appState.loading, profileImage: false },
@@ -114,12 +121,15 @@ export default function ProfilePageHeader({ userId }: ProfilePageHeaderProps) {
   };
 
   const handleNameLocationChange = async () => {
+    const loggedInUserId = session?.user?.id;
+    if (!loggedInUserId) return console.log("loggedInUserId not found");
     setAppState((appState) => ({
       ...appState,
       loading: { ...appState.loading, nameLocation: true },
     }));
 
     const formData = new FormData();
+    formData.set("loggedInUserId", loggedInUserId);
     formData.set("name", editInputs.name);
     formData.set("location", editInputs.location);
     const updatedUser = await changeNameLocation(formData);

@@ -49,6 +49,9 @@ export default function PostFormCard({}: PostFormCardProps) {
   const [files, setFiles] = useState<NewFile[] | null>(null);
 
   const handleSubmit = async (data: FormData) => {
+    const userId = session?.user?.id;
+    if (!userId) return console.log("userId not found");
+    data.set("userId", userId);
     setLoading(true);
     if (files) {
       data.delete("photos");

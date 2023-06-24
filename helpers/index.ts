@@ -1,7 +1,5 @@
 import { MyPost, MyUserDetails, MyUserFollows } from "@/types";
 import { User } from "@prisma/client";
-import { decode } from "next-auth/jwt";
-import { cookies } from "next/dist/client/components/headers";
 import axios from "axios";
 
 export const uploadPhotosToCloudinary = (photos: File[]) => {
@@ -52,12 +50,6 @@ export const uploadSinglePhotoToCloudinary = async (file: File) => {
     console.error("Error uploading photo:", error);
     throw error;
   }
-};
-
-export const getUserFromCookies = async () => {
-  const token = cookies().get("next-auth.session-token")?.value!;
-  const user = await decode({ token, secret: process.env.NEXTAUTH_SECRET! });
-  return user;
 };
 
 export const getAllPosts = async () => {

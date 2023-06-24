@@ -18,16 +18,18 @@ export default function LogInPage({}: LogInPageProps) {
     signIn("credentials", {
       redirect: false,
       ...formDetails,
-    }).then((data) => {
-      if (data?.error) {
-        setAuthError("Invalid Credentials");
-        setTimeout(() => {
-          setAuthError(null);
-        }, 3000);
-        return;
-      }
-      router.push(searchParams.get("callbackUrl") || "/");
-    });
+    })
+      .then((data) => {
+        if (data?.error) {
+          setAuthError("Invalid Credentials");
+          setTimeout(() => {
+            setAuthError(null);
+          }, 3000);
+          return;
+        }
+        router.push(searchParams.get("callbackUrl") || "/");
+      })
+      .finally(() => setLoading(false));
   };
   return (
     <div className="flex mt-4 max-w-4xl mx-auto gap-6">

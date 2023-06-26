@@ -21,6 +21,14 @@ export async function postContent(data: FormData) {
 
   const post = await prisma.post.create({
     data: { content, userId, photos: photosArray },
+    include: {
+      author: { select: { name: true, image: true } },
+      comments: {
+        include: { user: { select: { name: true, image: true } } },
+      },
+      likes: { select: { id: true } },
+      savedBy: { select: { id: true } },
+    },
   });
   return post;
 }
@@ -115,6 +123,14 @@ export async function savePost(data: FormData) {
   const updatedPost = await prisma.post.update({
     where: { id: Number(postId) },
     data: { savedBy: { connect: { id: userId } } },
+    // include: {
+    //   author: { select: { name: true, image: true } },
+    //   comments: {
+    //     include: { user: { select: { name: true, image: true } } },
+    //   },
+    //   likes: { select: { id: true } },
+    //   savedBy: { select: { id: true } },
+    // },
   });
 
   return updatedPost;

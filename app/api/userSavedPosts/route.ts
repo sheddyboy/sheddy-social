@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
   const userId = url.searchParams.get("userId");
 
   if (!userId) {
-    return NextResponse.json("userId required");
+    return NextResponse.json("userId required", { status: 400 });
   }
 
   const userSavedPosts = await prisma.user.findUnique({

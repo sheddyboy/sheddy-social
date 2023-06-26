@@ -2,7 +2,7 @@
 import Image from "next/image";
 import Avatar from "./Avatar";
 import Card from "./Card";
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import type { Session } from "next-auth";
 import {
@@ -22,6 +22,7 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { MyPost } from "@/types";
 import { BounceLoader } from "react-spinners";
+import { AppCtx } from "@/context";
 
 interface PostCardProps {
   post: MyPost;
@@ -29,6 +30,7 @@ interface PostCardProps {
 }
 
 export default function PostCard({ post, session }: PostCardProps) {
+  const { setAppState } = useContext(AppCtx);
   const queryClient = useQueryClient();
   const postTime = formatDistanceToNow(new Date(post.createdAt), {
     includeSeconds: true,
@@ -73,17 +75,31 @@ export default function PostCard({ post, session }: PostCardProps) {
     formData.set("postId", post.id.toString());
     formData.set("userId", session.user.id.toString());
     if (likes.isLikedByMe) {
-      await disLikePost(formData);
-      setLikes((likes) => ({
-        isLikedByMe: false,
-        likeCount: likes.likeCount - 1,
-      }));
+      try {
+        setLikes((likes) => ({
+          isLikedByMe: false,
+          likeCount: likes.likeCount - 1,
+        }));
+        await disLikePost(formData);
+      } catch (error) {
+        setLikes((likes) => ({
+          isLikedByMe: true,
+          likeCount: likes.likeCount + 1,
+        }));
+      }
     } else {
-      await likePost(formData);
-      setLikes((likes) => ({
-        isLikedByMe: true,
-        likeCount: likes.likeCount + 1,
-      }));
+      try {
+        setLikes((likes) => ({
+          isLikedByMe: true,
+          likeCount: likes.likeCount + 1,
+        }));
+        await likePost(formData);
+      } catch (error) {
+        setLikes((likes) => ({
+          isLikedByMe: false,
+          likeCount: likes.likeCount - 1,
+        }));
+      }
     }
     // queryClient.invalidateQueries({ queryKey: ["posts"] });
     queryClient.refetchQueries({ queryKey: ["posts"] });
@@ -91,23 +107,42 @@ export default function PostCard({ post, session }: PostCardProps) {
 
   const handleComments = async () => {
     if (!session?.user || !commentInputRef.current?.value) return;
+    const comment = commentInputRef.current.value;
+    const user = session.user;
     const formData = new FormData();
     formData.set("postId", post.id.toString());
-    formData.set("userId", session.user.id.toString());
-    formData.set("comment", commentInputRef.current.value);
-    const comment = await addComment(formData);
-    commentInputRef.current.value = "";
-    if (comment) {
+    formData.set("userId", user.id);
+    formData.set("comment", comment);
+    try {
       setComments((prev) => ({
         comments: [
           ...prev.comments,
           {
-            ...comment,
+            ...{
+              comment: comment,
+              createdAt: new Date(),
+              postId: post.id,
+              id: Math.random(),
+              updatedAt: new Date(),
+              userId: user.id,
+              user: { name: user.name, image: user.image },
+            },
             user: { name: session.user?.name!, image: session.user?.image! },
           },
         ],
         _comments: prev._comments + 1,
       }));
+      commentInputRef.current.value = "";
+      await addComment(formData);
+    } catch (error) {
+      setComments((prev) => {
+        const prevComments = [...prev.comments];
+        prevComments.pop();
+        return {
+          comments: prevComments,
+          _comments: prev._comments - 1,
+        };
+      });
     }
     // queryClient.invalidateQueries({ queryKey: ["posts"] });
     queryClient.refetchQueries({ queryKey: ["posts"] });
@@ -115,21 +150,86 @@ export default function PostCard({ post, session }: PostCardProps) {
 
   const handleSavedPost = async () => {
     if (!session?.user) return;
-    setLoading((prev) => ({ ...prev, bookmark: true }));
+    // setLoading((prev) => ({ ...prev, bookmark: true }));
     const formData = new FormData();
     formData.set("postId", post.id.toString());
     formData.set("userId", session.user.id.toString());
 
     if (isSavedByMe) {
-      await removeSavePost(formData);
-      setIsSavedByMe(false);
+      try {
+        setIsSavedByMe(false);
+        setAppState((prev) => {
+          const updatedSavedPosts = prev.savedPosts.posts?.filter(
+            (savedPost) => savedPost.id !== post.id
+          );
+          return {
+            ...prev,
+            savedPosts: { ...prev.savedPosts, posts: updatedSavedPosts },
+          };
+        });
+        await removeSavePost(formData);
+      } catch (error) {
+        setIsSavedByMe(true);
+        setAppState((prev) => {
+          const updatedSavedPosts = prev.savedPosts.posts
+            ? ([
+                {
+                  ...post,
+                  savedBy: [...post.savedBy, { id: session.user?.id }],
+                },
+                ...prev.savedPosts.posts,
+              ] as MyPost[])
+            : undefined;
+          return {
+            ...prev,
+            savedPosts: {
+              ...prev.savedPosts,
+              posts: updatedSavedPosts,
+            },
+          };
+        });
+      }
     } else {
-      await savePost(formData);
-      setIsSavedByMe(true);
+      try {
+        setIsSavedByMe(true);
+        setAppState((prev) => {
+          const updatedSavedPosts = prev.savedPosts.posts
+            ? ([
+                {
+                  ...post,
+                  savedBy: [...post.savedBy, { id: session.user?.id }],
+                },
+                ...prev.savedPosts.posts,
+              ] as MyPost[])
+            : undefined;
+          return {
+            ...prev,
+            savedPosts: {
+              ...prev.savedPosts,
+              posts: updatedSavedPosts,
+            },
+          };
+        });
+        await savePost(formData);
+      } catch (error) {
+        setIsSavedByMe(false);
+        setAppState((prev) => {
+          const updatedSavedPosts = prev.savedPosts.posts?.filter(
+            (savedPost) => savedPost.id !== post.id
+          );
+          return {
+            ...prev,
+            savedPosts: {
+              ...prev.savedPosts,
+              posts: updatedSavedPosts,
+            },
+          };
+        });
+      }
     }
     // queryClient.invalidateQueries({ queryKey: ["posts"] });
     queryClient.refetchQueries({ queryKey: ["posts"] });
-    setLoading((prev) => ({ ...prev, bookmark: false }));
+    // setLoading((prev) => ({ ...prev, bookmark: false }));
   };
   return (
     <Card>

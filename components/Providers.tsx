@@ -12,12 +12,12 @@ export default function Providers({ children }: ProvidersProps) {
   const queryClient = new QueryClient();
   return (
     <SessionProvider>
-      <AppContextProvider>
-        <QueryClientProvider client={queryClient}>
+      <QueryClientProvider client={queryClient}>
+        <AppContextProvider>
           {children}
           <ReactQueryDevtools />
-        </QueryClientProvider>
-      </AppContextProvider>
+        </AppContextProvider>
+      </QueryClientProvider>
     </SessionProvider>
   );
 }

@@ -28,9 +28,9 @@ export default function ProfilePageContent({ userId }: { userId: string }) {
     refetchOnWindowFocus: false,
     staleTime: Infinity,
   });
-  useEffect(() => {
-    isStale && refetch();
-  }, [isStale, refetch]);
+  // useEffect(() => {
+  //   isStale && refetch();
+  // }, [isStale, refetch]);
 
   const isEditable = session?.user?.id === user?.id;
 

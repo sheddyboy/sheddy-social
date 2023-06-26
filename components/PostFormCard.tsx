@@ -1,7 +1,7 @@
 "use client";
 import Card from "./Card";
 import Avatar from "./Avatar";
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { postContent } from "@/app/actions";
 import emojiData from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
@@ -12,10 +12,12 @@ import { Skeleton } from "./ui/Skeleton";
 import { useQueryClient } from "@tanstack/react-query";
 import Preloader from "./Preloader";
 import { cn } from "@/lib/utils";
+import { AppCtx } from "@/context";
 
 interface PostFormCardProps {}
 
 export default function PostFormCard({}: PostFormCardProps) {
+  const { setAppState } = useContext(AppCtx);
   const queryClient = useQueryClient();
   const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
@@ -62,7 +64,15 @@ export default function PostFormCard({}: PostFormCardProps) {
         formData.append("photos", file);
       });
     }
-    await postContent(formData);
+    const newPost = await postContent(formData);
+    setAppState((prev) => {
+      const updatedAllPosts = prev.allPosts
+        ? newPost
+          ? [newPost, ...prev.allPosts]
+          : [...prev.allPosts]
+        : prev.allPosts;
+      return { ...prev, allPosts: updatedAllPosts };
+    });
     // queryClient.invalidateQueries({ queryKey: ["posts"] });
     queryClient.refetchQueries({ queryKey: ["posts"] });
 

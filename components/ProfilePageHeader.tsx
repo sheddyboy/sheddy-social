@@ -46,9 +46,9 @@ export default function ProfilePageHeader({ userId }: ProfilePageHeaderProps) {
     refetchOnWindowFocus: false,
     staleTime: Infinity,
   });
-  useEffect(() => {
-    isStale && refetch();
-  }, [isStale, refetch]);
+  // useEffect(() => {
+  //   isStale && refetch();
+  // }, [isStale, refetch]);
 
   const { appState, setAppState } = useContext(AppCtx);
   const { update } = useSession();
@@ -197,7 +197,7 @@ export default function ProfilePageHeader({ userId }: ProfilePageHeaderProps) {
               />
               {appState.loading.coverImage && <Preloader />}
               {isEditable && (
-                <label className="absolute right-3 bottom-3 bg-white py-1 px-4 rounded-md shadow-md shadow-black flex gap-1 items-center cursor-pointer">
+                <label className="absolute right-3 bottom-3 bg-white py-1 px-2 rounded-md shadow-md shadow-black flex gap-1 items-center cursor-pointer">
                   <input
                     type="file"
                     accept="image/*"
@@ -206,7 +206,6 @@ export default function ProfilePageHeader({ userId }: ProfilePageHeaderProps) {
                     disabled={appState.loading.coverImage}
                   />
                   <CameraIcon className="w-5 h-5" />
-                  Change Cover
                 </label>
               )}
             </div>
@@ -228,6 +227,8 @@ export default function ProfilePageHeader({ userId }: ProfilePageHeaderProps) {
                       <input
                         type="text"
                         className="border py-2 px-3 rounded-md"
+                        placeholder="Name"
+                        required
                         disabled={appState.loading.nameLocation}
                         value={editInputs.name}
                         onChange={(e) => {
@@ -242,6 +243,7 @@ export default function ProfilePageHeader({ userId }: ProfilePageHeaderProps) {
                         type="text"
                         className="border py-2 px-3 rounded-md mt-1"
                         disabled={appState.loading.nameLocation}
+                        placeholder="Location"
                         onChange={(e) => {
                           setEditInputs((editInputs) => ({
                             ...editInputs,
@@ -278,7 +280,6 @@ export default function ProfilePageHeader({ userId }: ProfilePageHeaderProps) {
                           className="flex gap-1 bg-white rounded-md shadow-sm shadow-gray-500 py-1 px-2 "
                         >
                           <PencilSquareIcon className="w-6 h-6" />
-                          Edit Profile
                         </button>
                       )}
                       {appState.editMode.nameLocation && (

@@ -23,14 +23,6 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    // const newUser = await prisma.user.create({
-    //   data: {
-    //     name,
-    //     email,
-    //     password: hashedPassword,
-    //     image: imageUrl,
-    //   },
-    // });
     const newUser = await prisma.account.create({
       data: {
         provider: "credentials",
@@ -41,8 +33,8 @@ export async function POST(req: NextRequest) {
         },
       },
     });
-    return NextResponse.json(newUser);
+    return NextResponse.json(newUser, { status: 201 });
   } catch (error) {
-    return NextResponse.json({ error: error });
+    return NextResponse.json(error, { status: 400 });
   }
 }

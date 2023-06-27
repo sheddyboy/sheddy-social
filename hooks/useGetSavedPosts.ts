@@ -48,6 +48,4 @@ export default function useGetSavedPosts({
       savedPosts: { ...prev.savedPosts, isFetchingNextPage },
     }));
   }, [setAppState, isFetchingNextPage]);
-  console.log("isFetched", isFetched);
-  console.log("isFetching", isFetching);
 }

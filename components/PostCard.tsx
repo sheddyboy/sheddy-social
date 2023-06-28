@@ -244,8 +244,7 @@ export default function PostCard({ post, session }: PostCardProps) {
               className="font-semibold hover:underline hover:cursor-pointer"
             >
               {post.author.name}
-            </Link>{" "}
-            shared a <span className="">photo</span>
+            </Link>
           </p>
           <p className="text-gray-500 text-sm">{postTime}</p>
         </div>
